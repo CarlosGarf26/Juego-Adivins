@@ -2,7 +2,16 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#db2777" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Chilango Guess" />
+    <meta name="description" content="Juego de adivinanzas con jerga mexicana." />
+    
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1865/1865626.png" />
+    
     <title>Chilango Guess</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -10,6 +19,8 @@
       body {
         overscroll-behavior: none;
         touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
       }
     </style>
   <script type="importmap">

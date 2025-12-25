@@ -129,7 +129,7 @@ const App: React.FC = () => {
           </button>
         )}
         
-        <p className="mt-8 text-xs text-white/40">Powered by Gemini AI</p>
+        <p className="mt-8 text-xs text-white/40">Powered by Gemini AI, creado por Juan Garfias</p>
       </div>
     );
   }
