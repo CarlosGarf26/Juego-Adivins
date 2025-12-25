@@ -1,13 +1,11 @@
 {
   "name": "chilango-guess",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
-    "build": "echo 'No build step necessary for this static app'"
+    "build": "echo 'Build skipped: Static app'"
   },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@google/genai": "latest"
+  "engines": {
+    "node": ">=18.x"
   }
 }
