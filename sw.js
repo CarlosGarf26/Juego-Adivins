@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chilango-guess-v4';
+const CACHE_NAME = 'chilango-guess-v5';
 const STATIC_ASSETS = [
   '/manifest.json',
   'https://cdn.tailwindcss.com',
@@ -38,8 +38,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Estrategia: Network First para archivos de código (para desarrollo rápido)
-  // Cache First para librerías y assets
+  // Estrategia: Network First para archivos de código
   const isCode = url.pathname.endsWith('.tsx') || url.pathname.endsWith('.ts') || url.pathname.endsWith('.html') || url.pathname === '/';
 
   if (isCode) {
