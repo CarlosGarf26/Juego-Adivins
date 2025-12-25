@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chilango-guess-v6';
+const CACHE_NAME = 'chilango-guess-v7';
 const STATIC_ASSETS = [
   '/manifest.json',
   'https://cdn.tailwindcss.com',

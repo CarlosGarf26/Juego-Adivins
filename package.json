@@ -1,9 +1,9 @@
 {
   "name": "chilango-guess",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "scripts": {
-    "build": "echo 'Build skipped: Static app'"
+    "build": "mkdir -p dist && cp -r services hooks index.html index.tsx App.tsx types.ts manifest.json sw.js metadata.json dist/"
   },
   "engines": {
     "node": ">=18.x"
