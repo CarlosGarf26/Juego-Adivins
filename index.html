@@ -35,23 +35,19 @@
     </style>
     
     <script type="importmap">
-{
-  "imports": {
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "react-dom": "https://esm.sh/react-dom@18.2.0",
-    "react": "https://esm.sh/react@18.2.0",
-    "@google/genai": "https://esm.sh/@google/genai@0.1.2",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
-  }
-}
-</script>
+    {
+      "imports": {
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "react-dom": "https://esm.sh/react-dom@18.2.0",
+        "react": "https://esm.sh/react@18.2.0",
+        "@google/genai": "https://esm.sh/@google/genai@0.1.2"
+      }
+    }
+    </script>
 
     <script>
-        // Configuración global para evitar errores de process.env
+        // Configuración global
         window.process = { env: { NODE_ENV: 'development', API_KEY: '' } };
-        // Intentar recuperar la API KEY si Vercel la inyectó como variable global en otro lugar, 
-        // de lo contrario esperamos que el compilador la haya sustituido.
     </script>
   </head>
   <body class="bg-gray-900 text-white h-screen w-screen overflow-hidden">
@@ -98,12 +94,13 @@ Las definiciones deben ser graciosas pero claras.
 Los ejemplos deben sonar 100% auténticos de la CDMX.
 `;
 
+// Helper para detectar API Key
+const getApiKey = () => process.env.API_KEY || window.process?.env?.API_KEY;
+
 const fetchSlangWords = async (difficulty: Difficulty): Promise<WordCard[]> => {
-  // NOTA: Asegúrate de que tu API Key esté configurada en Vercel
-  const apiKey = process.env.API_KEY || window.process?.env?.API_KEY;
+  const apiKey = getApiKey();
   if (!apiKey) {
       console.warn("API KEY no encontrada. Usando modo offline.");
-      // Fallback inmediato si no hay key
       return getFallbackWords(difficulty);
   }
 
@@ -156,7 +153,10 @@ const getFallbackWords = (difficulty: Difficulty) => {
       { word: "Chela", definition: "Una cerveza fría", example: "Vamos por unas chelas." },
       { word: "Neta", definition: "La pura verdad", example: "¿Es neta lo que me dices?" },
       { word: "Aguas", definition: "¡Cuidado!", example: "¡Aguas con el perro!" },
-      { word: "Caer el 20", definition: "Entender algo de repente", example: "Apenas me cayó el 20." }
+      { word: "Caer el 20", definition: "Entender algo de repente", example: "Apenas me cayó el 20." },
+      { word: "Valedor", definition: "Amigo o compañero", example: "¿Qué pasó mi valedor?" },
+      { word: "A poco", definition: "Expresión de incredulidad", example: "¡A poco te ganaste la lotería!" },
+      { word: "Sepa la bola", definition: "Quién sabe", example: "¿Dónde está Juan? ¡Sepa la bola!" }
     ];
 };
 
@@ -173,8 +173,6 @@ const useGameSensor = (isActive: boolean, onCorrect: () => void, onPass: () => v
     const absGamma = Math.abs(gamma);
 
     // Lógica para detectar inclinación (teléfono en la frente en landscape)
-    // < 30 grados: Mirando al suelo (Correcto)
-    // > 150 grados: Mirando al cielo (Pasar)
     if (absGamma < 30 && lastAction.current === 'neutral') {
       onCorrect();
       lastAction.current = 'action';
@@ -219,6 +217,7 @@ const App = () => {
   const [feedback, setFeedback] = useState<'correct' | 'pass' | null>(null);
   const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [hasApiKey, setHasApiKey] = useState(false);
 
   const timerRef = useRef<number | null>(null);
 
@@ -226,6 +225,9 @@ const App = () => {
     const checkSize = () => setIsPortrait(window.innerHeight > window.innerWidth);
     window.addEventListener('resize', checkSize);
     
+    // Check Key
+    setHasApiKey(!!getApiKey());
+
     // Capturar evento de instalación
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -335,20 +337,26 @@ const App = () => {
         >
           ¡ADIVINA!
         </h1>
-        <h2 className="text-3xl font-bold text-white mb-10 tracking-widest uppercase text-pink-300">Edición Chilanga</h2>
+        <h2 className="text-3xl font-bold text-white mb-6 tracking-widest uppercase text-pink-300">Edición Chilanga</h2>
+
+        {!hasApiKey && (
+           <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-full px-4 py-1 mb-6">
+              <span className="text-yellow-200 text-xs font-bold uppercase tracking-wider">Modo Offline (Palabras limitadas)</span>
+           </div>
+        )}
         
-        <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20 w-full max-w-md shadow-2xl mb-10">
-          <p className="text-white text-lg mb-6 leading-relaxed">
-            Pon el cel en tu frente y que tus valedores te expliquen la palabra.
+        <div className="bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/20 w-full max-w-md shadow-2xl mb-8">
+          <p className="text-white text-base mb-4 leading-relaxed">
+            Pon el cel en tu frente y que la banda te ayude.
           </p>
           <div className="space-y-4">
-            <span className="text-xs font-bold text-pink-300 uppercase tracking-widest block">Selecciona Dificultad</span>
+            <span className="text-xs font-bold text-pink-300 uppercase tracking-widest block">Nivel de Barrio</span>
             <div className="flex gap-2">
               {(['facil', 'barrio', 'experto'] as Difficulty[]).map(d => (
                 <button 
                   key={d}
                   onClick={() => setDifficulty(d)}
-                  className={`flex-1 py-3 rounded-xl font-black uppercase transition-all ${difficulty === d ? 'bg-yellow-400 text-purple-900 scale-105 shadow-lg' : 'bg-white/5 text-white/50 hover:bg-white/10'}`}
+                  className={`flex-1 py-3 rounded-xl font-black uppercase transition-all text-sm ${difficulty === d ? 'bg-yellow-400 text-purple-900 scale-105 shadow-lg' : 'bg-white/5 text-white/50 hover:bg-white/10'}`}
                 >
                   {d}
                 </button>
@@ -399,7 +407,7 @@ const App = () => {
           <span className={`text-3xl font-black ${timeLeft < 10 ? 'text-red-400 animate-ping' : 'text-white'}`}>{timeLeft}s</span>
         </div>
 
-        {/* Zonas táctiles para jugar sin sensores */}
+        {/* Zonas táctiles */}
         <div className="flex w-full h-full absolute inset-0 z-0">
             <div className="w-1/2 h-full flex items-center justify-start pl-12 active:bg-white/10" onClick={handleCorrect}>
                 <span className="text-white/10 font-black text-6xl transform -rotate-90 pointer-events-none">CORRECTO</span>
