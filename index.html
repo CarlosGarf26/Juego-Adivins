@@ -15,9 +15,15 @@
     
     <title>Chilango Guess</title>
     
-    <!-- Librerías Externas -->
+    <!-- Librerías Externas (UMD - Más estables) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- React & ReactDOM (Globales) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel para transpilar JSX en vivo -->
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
       body {
@@ -49,17 +55,6 @@
           white-space: pre-wrap;
       }
     </style>
-    
-    <script type="importmap">
-    {
-      "imports": {
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "react-dom": "https://esm.sh/react-dom@18.2.0",
-        "react": "https://esm.sh/react@18.2.0",
-        "@google/genai": "https://esm.sh/@google/genai@0.1.2"
-      }
-    }
-    </script>
 
     <script>
         // Configuración global y manejo de errores
@@ -68,25 +63,25 @@
         window.onerror = function(message, source, lineno, colno, error) {
             const consoleEl = document.getElementById('error-console');
             const loaderMsg = document.getElementById('loader-msg');
+            const spinner = document.getElementById('loader-spinner');
+            
             if (consoleEl) {
                 consoleEl.style.display = 'block';
-                consoleEl.innerText += `[ERROR] ${message} at ${source}:${lineno}\n`;
+                consoleEl.innerText += `[ERROR] ${message}\nEn: ${source}:${lineno}\n`;
             }
             if (loaderMsg) {
                 loaderMsg.innerText = "¡CHALE! ALGO TRONÓ.";
                 loaderMsg.style.color = "#fca5a5";
             }
+            if (spinner) spinner.style.borderColor = "red";
         };
 
         // Timeout de seguridad
         setTimeout(() => {
-            const root = document.getElementById('root');
-            // Si sigue el loader (tiene la clase de loader o el div interno)
-            if (document.getElementById('loader-spinner')) {
-                const btn = document.getElementById('retry-btn');
-                if (btn) btn.style.display = 'block';
-                const msg = document.getElementById('loader-msg');
-                if (msg) msg.innerText = "¿Tarda mucho? Revisa tu red.";
+            const loader = document.getElementById('loader-spinner');
+            if (loader) {
+                document.getElementById('retry-btn').style.display = 'block';
+                document.getElementById('loader-msg').innerText = "¿Se pasmó? Intenta reiniciar.";
             }
         }, 8000);
         
@@ -100,6 +95,7 @@
             }
             localStorage.clear();
             sessionStorage.clear();
+            // Forzar recarga desde el servidor ignorando caché
             window.location.reload(true);
         }
     </script>
@@ -114,19 +110,23 @@
             <h2 id="loader-msg" class="text-white font-bold tracking-widest animate-pulse mb-8">CARGANDO BARRIO...</h2>
             
             <button id="retry-btn" onclick="window.location.reload()" class="hidden bg-white/10 border border-white/20 text-white px-6 py-2 rounded-full mb-4">
-                Reintentar
+                Recargar Página
             </button>
              <button onclick="hardReset()" class="text-xs text-gray-400 underline mt-8 opacity-60">
-                ¿Trabado? Toca aquí para reiniciar todo
+                Borrar datos y reiniciar (Hard Reset)
             </button>
         </div>
     </div>
 
     <!-- LÓGICA DEL JUEGO INCRUSTADA -->
+    <!-- data-type="module" permite usar import para librerías modernas dentro de Babel -->
     <script type="text/babel" data-type="module" data-presets="react,typescript">
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import ReactDOM from 'react-dom/client';
-import { GoogleGenAI, Type } from "@google/genai";
+// IMPORTANTE: React y ReactDOM ya están cargados globalmente como 'React' y 'ReactDOM'
+// No usamos 'import React from ...' para evitar errores de módulos.
+const { useState, useEffect, useRef, useCallback } = React;
+
+// Importamos SOLO la librería de Gemini como módulo (es moderna)
+import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.2.1";
 
 // --- TYPES ---
 enum GameState {
@@ -271,18 +271,18 @@ const useGameSensor = (isActive: boolean, onCorrect: () => void, onPass: () => v
 
 // --- MAIN COMPONENT ---
 const App = () => {
-  const [gameState, setGameState] = useState<GameState>(GameState.IDLE);
-  const [deck, setDeck] = useState<WordCard[]>([]);
+  const [gameState, setGameState] = useState(GameState.IDLE);
+  const [deck, setDeck] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [results, setResults] = useState<GameResult[]>([]);
-  const [difficulty, setDifficulty] = useState<Difficulty>('barrio');
+  const [results, setResults] = useState([]);
+  const [difficulty, setDifficulty] = useState('barrio');
   const [timeLeft, setTimeLeft] = useState(60);
-  const [feedback, setFeedback] = useState<'correct' | 'pass' | null>(null);
+  const [feedback, setFeedback] = useState(null);
   const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installPrompt, setInstallPrompt] = useState(null);
   const [hasApiKey, setHasApiKey] = useState(false);
 
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     const checkSize = () => setIsPortrait(window.innerHeight > window.innerWidth);
@@ -307,9 +307,9 @@ const App = () => {
     if (outcome === 'accepted') setInstallPrompt(null);
   };
 
-  const playSound = (freq: number) => {
+  const playSound = (freq) => {
     try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       const ctx = new AudioContext();
       const osc = ctx.createOscillator();
@@ -415,7 +415,7 @@ const App = () => {
           <div className="space-y-4">
             <span className="text-xs font-bold text-pink-300 uppercase tracking-widest block">Nivel de Barrio</span>
             <div className="flex gap-2">
-              {(['facil', 'barrio', 'experto'] as Difficulty[]).map(d => (
+              {(['facil', 'barrio', 'experto']).map(d => (
                 <button 
                   key={d}
                   onClick={() => setDifficulty(d)}
