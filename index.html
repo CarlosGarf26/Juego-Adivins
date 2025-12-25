@@ -22,6 +22,20 @@
         user-select: none;
         -webkit-user-select: none;
       }
+      #error-log {
+        display: none;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0,0,0,0.8);
+        color: #ff5555;
+        font-family: monospace;
+        font-size: 12px;
+        padding: 10px;
+        z-index: 9999;
+        white-space: pre-wrap;
+      }
     </style>
   <script type="importmap">
 {
@@ -33,9 +47,39 @@
   }
 }
 </script>
+<script>
+    // Polyfill simple para evitar crash si process.env no existe
+    if (typeof process === 'undefined') {
+        window.process = { env: {} };
+    }
+    
+    // Capturar errores globales para mostrarlos en pantalla en el móvil
+    window.onerror = function(message, source, lineno, colno, error) {
+        var log = document.getElementById('error-log');
+        if (log) {
+            log.style.display = 'block';
+            log.innerText += "Error: " + message + "\nAt: " + source + ":" + lineno + "\n\n";
+        }
+    };
+    
+    window.addEventListener('unhandledrejection', function(event) {
+        var log = document.getElementById('error-log');
+        if (log) {
+            log.style.display = 'block';
+            log.innerText += "Promise Rejection: " + event.reason + "\n\n";
+        }
+    });
+</script>
 </head>
   <body class="bg-gray-900 text-white h-screen w-screen overflow-hidden">
-    <div id="root"></div>
+    <div id="root">
+        <!-- Loading State visible before React mounts -->
+        <div class="flex flex-col items-center justify-center h-full">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-pink-500 mb-4"></div>
+            <p class="text-white text-lg font-bold">Cargando Chilango Guess...</p>
+        </div>
+    </div>
+    <div id="error-log"></div>
     <script type="module" src="./index.tsx"></script>
   </body>
 </html>
