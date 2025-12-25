@@ -1,0 +1,5 @@
+{
+  "name": "Chilango Guess",
+  "description": "Un juego de adivinanzas (tipo Charadas) con jerga de la Ciudad de México, potenciado por Gemini AI.",
+  "requestFramePermissions": []
+}
