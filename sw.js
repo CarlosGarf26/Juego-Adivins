@@ -1,5 +1,7 @@
-const CACHE_NAME = 'chilango-guess-v9';
+const CACHE_NAME = 'chilango-guess-v10';
 const STATIC_ASSETS = [
+  '/',
+  '/index.html',
   '/manifest.json',
   'https://cdn.tailwindcss.com',
   'https://cdn-icons-png.flaticon.com/512/1865/1865626.png',
@@ -38,25 +40,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Estrategia: Network First para archivos de código
-  const isCode = url.pathname.endsWith('.tsx') || url.pathname.endsWith('.ts') || url.pathname.endsWith('.html') || url.pathname === '/';
-
-  if (isCode) {
-    event.respondWith(
-      fetch(event.request)
-        .catch(() => caches.match(event.request))
-    );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request).then((fetchRes) => {
-           if(fetchRes.status === 200) {
-             const resClone = fetchRes.clone();
-             caches.open(CACHE_NAME).then(cache => cache.put(event.request, resClone));
-           }
-           return fetchRes;
-        });
-      })
-    );
-  }
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
 });

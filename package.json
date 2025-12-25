@@ -1,8 +1,8 @@
 {
   "name": "chilango-guess",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "scripts": {
-    "build": "mkdir -p dist && cp index.html index.tsx manifest.json sw.js metadata.json dist/"
+    "build": "mkdir -p dist && cp index.html manifest.json sw.js metadata.json dist/"
   }
 }
