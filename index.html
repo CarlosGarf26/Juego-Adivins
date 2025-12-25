@@ -32,6 +32,22 @@
         0%, 100% { transform: rotate(-2deg) scale(1); text-shadow: 0 4px 0 rgba(0,0,0,0.3); }
         50% { transform: rotate(-2deg) scale(1.05); text-shadow: 0 10px 20px rgba(253, 224, 71, 0.6); }
       }
+      #error-console {
+          display: none;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          background: rgba(127, 29, 29, 0.95);
+          color: white;
+          font-family: monospace;
+          padding: 10px;
+          font-size: 12px;
+          z-index: 9999;
+          max-height: 50vh;
+          overflow-y: auto;
+          white-space: pre-wrap;
+      }
     </style>
     
     <script type="importmap">
@@ -46,16 +62,63 @@
     </script>
 
     <script>
-        // Configuración global
+        // Configuración global y manejo de errores
         window.process = { env: { NODE_ENV: 'development', API_KEY: '' } };
+        
+        window.onerror = function(message, source, lineno, colno, error) {
+            const consoleEl = document.getElementById('error-console');
+            const loaderMsg = document.getElementById('loader-msg');
+            if (consoleEl) {
+                consoleEl.style.display = 'block';
+                consoleEl.innerText += `[ERROR] ${message} at ${source}:${lineno}\n`;
+            }
+            if (loaderMsg) {
+                loaderMsg.innerText = "¡CHALE! ALGO TRONÓ.";
+                loaderMsg.style.color = "#fca5a5";
+            }
+        };
+
+        // Timeout de seguridad
+        setTimeout(() => {
+            const root = document.getElementById('root');
+            // Si sigue el loader (tiene la clase de loader o el div interno)
+            if (document.getElementById('loader-spinner')) {
+                const btn = document.getElementById('retry-btn');
+                if (btn) btn.style.display = 'block';
+                const msg = document.getElementById('loader-msg');
+                if (msg) msg.innerText = "¿Tarda mucho? Revisa tu red.";
+            }
+        }, 8000);
+        
+        function hardReset() {
+            if (navigator.serviceWorker) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+            }
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.reload(true);
+        }
     </script>
   </head>
   <body class="bg-gray-900 text-white h-screen w-screen overflow-hidden">
+    <div id="error-console">ERRORES DETECTADOS:<br></div>
+
     <div id="root" class="h-full w-full">
         <!-- Loader inicial HTML puro -->
-        <div class="flex flex-col items-center justify-center h-full bg-indigo-950">
-            <div class="w-16 h-16 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <h2 class="text-white font-bold tracking-widest animate-pulse">CARGANDO BARRIO...</h2>
+        <div class="flex flex-col items-center justify-center h-full bg-indigo-950 px-4 text-center">
+            <div id="loader-spinner" class="w-16 h-16 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <h2 id="loader-msg" class="text-white font-bold tracking-widest animate-pulse mb-8">CARGANDO BARRIO...</h2>
+            
+            <button id="retry-btn" onclick="window.location.reload()" class="hidden bg-white/10 border border-white/20 text-white px-6 py-2 rounded-full mb-4">
+                Reintentar
+            </button>
+             <button onclick="hardReset()" class="text-xs text-gray-400 underline mt-8 opacity-60">
+                ¿Trabado? Toca aquí para reiniciar todo
+            </button>
         </div>
     </div>
 
@@ -466,11 +529,16 @@ const App = () => {
   return null;
 };
 
-// Render seguro
-const rootElement = document.getElementById('root');
-if (rootElement) {
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(<App />);
+// Render seguro con manejo de errores
+try {
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    }
+} catch (err) {
+    console.error("Mount error:", err);
+    document.getElementById('root').innerHTML = '<div style="color:red; padding:20px;">Error grave al iniciar: ' + err.message + '</div>';
 }
     </script>
   </body>
