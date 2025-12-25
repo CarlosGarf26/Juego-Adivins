@@ -1,7 +1,7 @@
 {
   "name": "Chilango Guess",
   "short_name": "Chilango",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#db2777",

@@ -13,14 +13,19 @@
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1865/1865626.png" />
     
     <title>Chilango Guess</title>
+    
+    <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Babel para compilar React en el navegador -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
-      /* Prevent scrolling / bouncing on mobile */
       body {
         overscroll-behavior: none;
         touch-action: none;
         user-select: none;
         -webkit-user-select: none;
+        background-color: #111827;
       }
       #error-log {
         display: none;
@@ -28,58 +33,57 @@
         bottom: 0;
         left: 0;
         width: 100%;
-        background: rgba(0,0,0,0.8);
+        background: rgba(0,0,0,0.9);
         color: #ff5555;
         font-family: monospace;
-        font-size: 12px;
+        font-size: 10px;
         padding: 10px;
         z-index: 9999;
         white-space: pre-wrap;
+        max-height: 150px;
+        overflow-y: auto;
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
-  }
-}
-</script>
-<script>
-    // Polyfill simple para evitar crash si process.env no existe
-    if (typeof process === 'undefined') {
-        window.process = { env: {} };
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+        "react-dom": "https://esm.sh/react-dom@18.2.0",
+        "react/": "https://esm.sh/react@18.2.0/",
+        "react": "https://esm.sh/react@18.2.0",
+        "@google/genai": "https://esm.sh/@google/genai@0.0.2"
+      }
     }
-    
-    // Capturar errores globales para mostrarlos en pantalla en el móvil
-    window.onerror = function(message, source, lineno, colno, error) {
-        var log = document.getElementById('error-log');
-        if (log) {
-            log.style.display = 'block';
-            log.innerText += "Error: " + message + "\nAt: " + source + ":" + lineno + "\n\n";
-        }
-    };
-    
-    window.addEventListener('unhandledrejection', function(event) {
-        var log = document.getElementById('error-log');
-        if (log) {
-            log.style.display = 'block';
-            log.innerText += "Promise Rejection: " + event.reason + "\n\n";
-        }
-    });
-</script>
-</head>
+    </script>
+
+    <script>
+        // Configuración de proceso global
+        window.process = { env: { NODE_ENV: 'development' } };
+        
+        // Manejo de errores visual
+        window.onerror = function(message, source, lineno, colno, error) {
+            var log = document.getElementById('error-log');
+            if (log) {
+                log.style.display = 'block';
+                log.innerText += "Err: " + message + "\n";
+            }
+            console.error(error);
+        };
+    </script>
+  </head>
   <body class="bg-gray-900 text-white h-screen w-screen overflow-hidden">
-    <div id="root">
-        <!-- Loading State visible before React mounts -->
-        <div class="flex flex-col items-center justify-center h-full">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-pink-500 mb-4"></div>
-            <p class="text-white text-lg font-bold">Cargando Chilango Guess...</p>
+    <div id="root" class="h-full w-full">
+        <!-- Pantalla de carga inicial (HTML puro) -->
+        <div class="flex flex-col items-center justify-center h-full bg-gray-900">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-pink-500 mb-6"></div>
+            <h2 class="text-white text-xl font-bold uppercase tracking-widest">Cargando...</h2>
+            <p class="text-gray-400 text-sm mt-2">Preparando el barrio</p>
         </div>
     </div>
     <div id="error-log"></div>
-    <script type="module" src="./index.tsx"></script>
+
+    <!-- Importante: data-presets y type="text/babel" para que funcione el JSX -->
+    <script type="text/babel" data-type="module" data-presets="react,typescript" src="./index.tsx"></script>
   </body>
 </html>
