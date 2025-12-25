@@ -226,8 +226,21 @@ const App = () => {
   if (gameState === GameState.IDLE) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-tr from-indigo-900 via-purple-900 to-pink-800 p-6 text-center">
-        <h1 className="text-7xl font-black text-yellow-300 mb-2 italic tracking-tighter drop-shadow-2xl transform -rotate-2">CHILANGO</h1>
-        <h2 className="text-3xl font-bold text-white mb-10 tracking-widest uppercase">Guess Up!</h2>
+        {/* Estilo para la animación del título */}
+        <style>{`
+          @keyframes title-pulse {
+            0%, 100% { transform: rotate(-2deg) scale(1); text-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+            50% { transform: rotate(-2deg) scale(1.05); text-shadow: 0 10px 20px rgba(253, 224, 71, 0.6); }
+          }
+        `}</style>
+        
+        <h1 
+          className="text-7xl font-black text-yellow-300 mb-2 italic tracking-tighter"
+          style={{ animation: 'title-pulse 2s infinite ease-in-out' }}
+        >
+          ¡ADIVINA!
+        </h1>
+        <h2 className="text-3xl font-bold text-white mb-10 tracking-widest uppercase text-pink-300">Edición Chilanga</h2>
         
         <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20 w-full max-w-md shadow-2xl mb-10">
           <p className="text-white text-lg mb-6 leading-relaxed">
